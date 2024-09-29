@@ -9,7 +9,7 @@ spring:
     show-sql: true
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ms_seguridad
+    url: jdbc:mysql://localhost:3306/tesis1
     username: root
     password:
 
