@@ -1,48 +1,54 @@
 package org.example.msauth.security;
 
-import io.jsonwebtoken.*;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.example.msauth.entity.AuthUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.example.msauth.entity.AuthUser;
-
+import javax.annotation.PostConstruct;
+import java.util.Base64;
 import java.util.Date;
-
+import java.util.HashMap;
+import java.util.Map;
 @Component
-public class JwtProvider {
-
+public class JwtProvider    {
     @Value("${jwt.secret}")
-    private String jwtSecret;
+    private String secret;
+    @PostConstruct
+    protected void init() {
+        secret = Base64.getEncoder().encodeToString(secret.getBytes());
+    }
 
-    @Value("${jwt.expirationMs}")
-    private int jwtExpirationMs;
-
-    // Crear el token JWT utilizando el nombre de usuario
-    public String createToken(AuthUser user) {
+    public String createToken(AuthUser authUser) {
+        Map<String, Object> claims = new HashMap<>();
+        claims = Jwts.claims().setSubject(authUser.getUserName());
+        claims.put("id", authUser.getId());
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + 3600000);
         return Jwts.builder()
-                .setSubject(user.getUserName())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(exp)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
-    // Validar el token JWT
-    public boolean validateToken(String token) {
+    public boolean validate(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+
             return true;
-        } catch (SignatureException | MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException e) {
-            System.out.println("Invalid JWT: " + e.getMessage());
+        }catch (Exception e){
+            return false;
         }
-        return false;
     }
 
-    // Obtener el nombre de usuario desde el token JWT
-    public String getUserNameFromJwt(String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public String getUserNameFromToken(String token){
+        try {
+            return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
+        }catch (Exception e) {
+            return "bad token";
+        }
     }
 }
