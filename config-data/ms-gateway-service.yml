@@ -1,0 +1,99 @@
+server:
+  port: 8099
+
+
+eureka:
+  client:
+    serviceUrl:
+      #defaultZone: ${EUREKA_URI:http://localhost:8090/eureka}
+      defaultZone: ${EUREKA_URI:http://localhost:8091/eureka}
+
+  instance:
+    #instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedHeaders: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+      routes:
+        - id: ms-clientegym-service
+          uri: lb://ms-clientegym-service
+          predicates:
+            - Path=/clientegym/**
+        - id: ms-membresia-service
+          uri: lb://ms-membresia-service
+          predicates:
+            - Path=/membresia/**
+          filters:
+            - AuthFilter
+        - id: ms-catalogo-service
+          uri: lb://ms-catalogo-service
+          predicates:
+            - Path=/categoria/**, /producto/**
+          filters:
+            - AuthFilter
+        - id: ms-pedido-service
+          uri: lb://ms-pedido-service
+          predicates:
+            - Path=/pedido/**
+          filters:
+            - AuthFilter
+        - id: ms-asesoramiento-service
+          uri: lb://ms-asesoramiento-service
+          predicates:
+            - Path=/asesoramiento/**
+          filters:
+            - AuthFilter
+        - id: ms-trainer-service
+          uri: lb://ms-trainer-service
+          predicates:
+            - Path=/trainer/**
+          filters:
+            - AuthFilter
+        - id: ms-pagomembresia-service
+          uri: lb://ms-pagomembresia-service
+          predicates:
+            - Path=/pagomembresia/**
+          filters:
+            - AuthFilter
+        - id: ms-instructor-service
+          uri: lb://ms-instructor-service
+          predicates:
+            - Path=/instructor/**
+          filters:
+            - AuthFilter
+        - id: ms-clase-service
+          uri: lb://ms-clase-service
+          predicates:
+            - Path=/clase/**
+          filters:
+            - AuthFilter
+        - id: ms-pagoclase-service
+          uri: lb://ms-pagoclase-service
+          predicates:
+            - Path=/pagoclase/**
+          filters:
+            - AuthFilter
+        - id: ms-inscripcion-service
+          uri: lb://ms-inscripcion-service
+          predicates:
+            - Path=/inscripcion/**
+        - id: ms-asistencia-service
+          uri: lb://ms-asistencia-service
+          predicates:
+            - Path=/asistencia/**,  /ususario/**
+        - id: ms-auth-service
+          uri: lb://ms-auth-service
+          predicates:
+            - Path=/auth/**
